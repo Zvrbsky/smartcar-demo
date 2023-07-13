@@ -16,14 +16,14 @@ app.set('view engine', '.hbs');
 const port = 8000;
 
 const client = new smartcar.AuthClient({
-  mode: 'test',
+  mode: 'live',
 });
 
 // global variable to save our accessToken
 let access;
 
 app.get('/login', function (req, res) {
-  const authUrl = client.getAuthUrl(['required:read_vehicle_info']);
+  const authUrl = client.getAuthUrl(['required:read_vehicle_info', 'required:read_battery']);
 
   res.render('home', {
     url: authUrl,
@@ -32,6 +32,7 @@ app.get('/login', function (req, res) {
 
 app.get('/exchange', async function (req, res) {
   const code = req.query.code;
+  console.log(code);
 
   // in a production app you'll want to store this in some kind of persistent storage
   access = await client.exchangeCode(code);
@@ -50,8 +51,10 @@ app.get('/vehicle', async function (req, res) {
 
   // get identifying information about a vehicle
   const attributes = await vehicle.attributes();
+  const battery = await vehicle.battery();
   res.render('vehicle', {
     info: attributes,
+    battery,
   });
 });
 
